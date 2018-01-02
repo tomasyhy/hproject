@@ -1,0 +1,36 @@
+AppBundle\Entity\Problem:
+    type: entity
+    table: null
+    repositoryClass: AppBundle\Repository\ProblemRepository
+    id:
+        id:
+            type: integer
+            id: true
+            generator:
+                strategy: AUTO
+    fields:
+        title:
+            type: string
+            length: 50
+            unique: true
+            nullable: false
+        description:
+            type: string
+            nullable: false
+
+    manyToOne:
+        user:
+            targetEntity: AppBundle\Entity\User
+            joinColumn:
+                name: user_id
+                referencedColumnName: id
+                onDelete: CASCADE
+                nullable: false
+
+    oneToMany:
+        solutions:
+            targetEntity: AppBundle\Entity\Solution
+            mappedBy: problem
+            cascade: ["persist", "merge"]
+
+    lifecycleCallbacks: {  }

@@ -6,7 +6,8 @@ framework:
     session:
         storage_id: session.storage.mock_file
     profiler:
-        collect: false
+        enabled: true
+        collect: true
 
 web_profiler:
     toolbar: false
@@ -14,3 +15,11 @@ web_profiler:
 
 swiftmailer:
     disable_delivery: true
+
+doctrine:
+    dbal:
+        host: '%database_host%'
+        port: '%database_port%'
+        dbname: '%database_name%_test'
+        user: '%database_user%'
+        password: '%database_password%'

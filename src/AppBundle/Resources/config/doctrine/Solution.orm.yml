@@ -1,0 +1,35 @@
+AppBundle\Entity\Solution:
+    type: entity
+    table: null
+    repositoryClass: AppBundle\Repository\SolutionRepository
+    id:
+        id:
+            type: integer
+            id: true
+            generator:
+                strategy: AUTO
+    fields:
+        content:
+            type: string
+            nullable: false
+        rating:
+            type: integer
+            nullable: true
+
+    manyToOne:
+        user:
+            targetEntity: AppBundle\Entity\User
+            joinColumn:
+                name: user_id
+                referencedColumnName: id
+                onDelete: CASCADE
+                nullable: false
+        problem:
+            targetEntity: AppBundle\Entity\Problem
+            joinColumn:
+                name: problem_id
+                referencedColumnName: id
+                onDelete: CASCADE
+                nullable: false
+
+    lifecycleCallbacks: {  }

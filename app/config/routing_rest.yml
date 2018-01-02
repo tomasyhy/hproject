@@ -1,0 +1,9 @@
+login:
+    type: rest
+    resource: AppBundle\Controller\LoginController
+profile:
+    type: rest
+    resource: AppBundle\Controller\ProfileController
+password_management:
+    type: rest
+    resource: AppBundle\Controller\PasswordManagementController

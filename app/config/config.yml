@@ -44,9 +44,9 @@ doctrine:
         driver: pdo_mysql
         host: '%database_host%'
         port: '%database_port%'
-        dbname: 'hproject'
-        user: 'homestead'
-        password: 'secret'
+        dbname: '%database_name%'
+        user: '%database_user%'
+        password: '%database_password%'
         charset: UTF8
         # if using pdo_sqlite as your database driver:
         #   1. add the path in parameters.yml
@@ -68,25 +68,58 @@ swiftmailer:
     password: '%mailer_password%'
     spool: { type: memory }
 
-fos_rest:
-    routing_loader:
-        default_format: json                            # All responses should be JSON formated
-        include_format: false                           # We do not include format in request, so that all responses
-                                                        # will eventually be JSON formated
-    format_listener:
-        rules:
-            - { priorities: ['json', 'xml'], fallback_format: json, prefer_extension: false }
-    view:
-        view_response_listener: true
-
+# FOS User
 fos_user:
     db_driver: orm
-    firewall_name: hproject.app                                  # Seems to be used when registering user/reseting password,
-                                                        # but since there is no "login", as so it seems to be useless in
-                                                        # our particular context, but still required by "FOSUserBundle"
+    firewall_name: api
     user_class: AppBundle\Entity\User
     from_email:
-        address: "noreply@yourcompany.com"
-        sender_name: "No Reply"
+        address: "%mailer_user%"
+        sender_name: "%mailer_user%"
+    service:
+        mailer: user.mailer.rest
 
+# Nelmio CORS
+nelmio_cors:
+    defaults:
+        allow_origin:  ["%cors_allow_origin%"]
+        allow_methods: ["POST", "PUT", "GET", "DELETE", "OPTIONS"]
+        allow_headers: ["content-type", "authorization"]
+        max_age:       3600
+    paths:
+        '^/': ~
+
+# Nelmio API Doc
 nelmio_api_doc: ~
+
+# FOS REST Bundle
+fos_rest:
+    body_listener: true
+    param_fetcher_listener: force
+    format_listener:
+        enabled: true
+        rules:
+            - { path: ^/, priorities: [ json ], fallback_format: json, prefer_extension: true }
+    view:
+        view_response_listener: 'force'
+        formats:
+            json: true
+            xml: false
+            rss: false
+        mime_types:
+            json: ['application/json', 'application/x-json']
+    routing_loader:
+        default_format:  json
+        include_format:  false
+    exception:
+        enabled: true
+
+#JMS Serializer
+jms_serializer: ~
+
+# Lexik JWT Bundle
+lexik_jwt_authentication:
+    private_key_path: "%jwt_private_key_path%"
+    public_key_path:  "%jwt_public_key_path%"
+    pass_phrase:      "%jwt_key_pass_phrase%"
+    token_ttl:        "%jwt_token_ttl%"
