@@ -2,33 +2,25 @@
 
 use Codeception\Util\HttpCode;
 use AppBundle\Entity\User;
+use Step\LoginStep;
 
 class UserProfileCest
 {
     private $username = 'username';
     private $password = 'test';
     private $email = 'test@example.com';
+    private $confirmationToken = 'confirmation-token';
+
     private $username2 = 'username2';
     private $password2 = 'test2';
     private $email2 = 'test2@example.com';
+    private $confirmationToken2 = 'confirmation-token2';
 
-
-    public function _before(ApiTester $I)
+    public function viewUserProfile(LoginStep $I)
     {
-        $I->haveInRepository(User::class, ['username' => $this->username, 'password' => $this->encodePasswordByBCryptSymfonyAlgorithm($this->password), 'enabled' => 1, 'email' => $this->email]);
-        $I->haveInRepository(User::class, ['username' => $this->username2, 'password' => $this->encodePasswordByBCryptSymfonyAlgorithm($this->password2), 'enabled' => 1, 'email' => $this->email2]);
-    }
-
-    public function viewUserProfile(ApiTester $I)
-    {
-        $user = $I->grabEntityFromRepository(User::class, ['username' => $this->username]);
-
-        $I->sendPOST('/login', ['username' => $this->username, 'password' => $this->password]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-        $token = $I->grabDataFromResponseByJsonPath('token')[0];
-
-        $I->amBearerAuthenticated($token);
-        $I->sendGET('/profile/' . $user->getId());
+        $user1Id = $I->haveInRepository(User::class, ['username' => $this->username, 'password' => $this->encodePasswordByBCryptSymfonyAlgorithm($this->password), 'enabled' => 1, 'email' => $this->email, 'confirmationToken' => $this->confirmationToken]);
+        $I->imLogged($this->username, $this->password);
+        $I->sendGET('/profile/' . $user1Id);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseIsJson();
 
@@ -40,69 +32,48 @@ class UserProfileCest
         );
     }
 
-    public function viewUserProfileWithoutToken(ApiTester $I)
+    public function cantViewUserProfileWithoutToken(ApiTester $I)
     {
-        $user = $I->grabEntityFromRepository(User::class, ['username' => $this->username]);
-
+        $user1Id = $I->haveInRepository(User::class, ['username' => $this->username, 'password' => $this->encodePasswordByBCryptSymfonyAlgorithm($this->password), 'enabled' => 1, 'email' => $this->email, 'confirmationToken' => $this->confirmationToken]);
         $I->sendPOST('/login', ['username' => $this->username, 'password' => $this->password]);
         $I->seeResponseCodeIs(HttpCode::OK);
-
-        $I->sendGET('/profile/' . $user->getId());
+        $I->sendGET('/profile/' . $user1Id);
         $I->seeResponseCodeIs(HttpCode::UNAUTHORIZED);
         $I->seeResponseIsJson();
     }
 
-    public function viewOtherUserProfile(ApiTester $I)
+    public function cantViewOtherUserProfile(LoginStep $I)
     {
-        $user2 = $I->grabEntityFromRepository(User::class, ['username' => $this->username2]);
-
-
-        $I->sendPOST('/login', ['username' => $this->username, 'password' => $this->password]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-        $token = $I->grabDataFromResponseByJsonPath('token')[0];
-
-        $I->amBearerAuthenticated($token);
-        $I->sendGET('/profile/' . $user2->getId());
+        $I->haveInRepository(User::class, ['username' => $this->username, 'password' => $this->encodePasswordByBCryptSymfonyAlgorithm($this->password), 'enabled' => 1, 'email' => $this->email, 'confirmationToken' => $this->confirmationToken]);
+        $I->imLogged($this->username, $this->password);
+        $user2Id = $I->haveInRepository(User::class, ['username' => $this->username2, 'password' => $this->encodePasswordByBCryptSymfonyAlgorithm($this->password2), 'enabled' => 1, 'email' => $this->email2, 'confirmationToken' => $this->confirmationToken2]);
+        $I->sendGET('/profile/' . $user2Id);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $I->seeResponseIsJson();
     }
 
-    public function updateUserProfile(ApiTester $I)
+    public function updateUserProfile(LoginStep $I)
     {
-        $user = $I->grabEntityFromRepository(User::class, ['username' => $this->username]);
-
-        $I->sendPOST('/login', ['username' => $this->username, 'password' => $this->password]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-        $token = $I->grabDataFromResponseByJsonPath('token')[0];
-
-        $I->amBearerAuthenticated($token);
-        $I->sendPUT('/profile/' . $user->getId(), ['username' => 'updatedUsername', 'current_password' => $this->password, 'email' => 'updatedEmail@example.com']);
+        $user1Id = $I->haveInRepository(User::class, ['username' => $this->username, 'password' => $this->encodePasswordByBCryptSymfonyAlgorithm($this->password), 'enabled' => 1, 'email' => $this->email, 'confirmationToken' => $this->confirmationToken]);
+        $I->imLogged($this->username, $this->password);
+        $I->sendPUT('/profile/' . $user1Id, ['username' => 'updatedUsername', 'current_password' => $this->password, 'email' => 'updatedEmail@example.com']);
         $I->seeResponseCodeIs(HttpCode::NO_CONTENT);
     }
 
-    public function updateUserProfileWithoutCurrentPassword(ApiTester $I)
+    public function updateUserProfileWithoutCurrentPassword(LoginStep $I)
     {
-        $user = $I->grabEntityFromRepository(User::class, ['username' => $this->username]);
-
-        $I->sendPOST('/login', ['username' => $this->username, 'password' => $this->password]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-        $token = $I->grabDataFromResponseByJsonPath('token')[0];
-
-        $I->amBearerAuthenticated($token);
-        $I->sendPUT('/profile/' . $user->getId(), ['username' => 'updatedUsername', 'email' => $this->email]);
+        $user1Id = $I->haveInRepository(User::class, ['username' => $this->username, 'password' => $this->encodePasswordByBCryptSymfonyAlgorithm($this->password), 'enabled' => 1, 'email' => $this->email, 'confirmationToken' => $this->confirmationToken]);
+        $I->imLogged($this->username, $this->password);
+        $I->sendPUT('/profile/' . $user1Id, ['username' => 'updatedUsername', 'email' => $this->email]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
     }
 
-    public function updateOtherUserProfile(ApiTester $I)
+    public function updateOtherUserProfile(LoginStep $I)
     {
-        $user2 = $I->grabEntityFromRepository(User::class, ['username' => $this->username2]);
-
-        $I->sendPOST('/login', ['username' => $this->username, 'password' => $this->password]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-        $token = $I->grabDataFromResponseByJsonPath('token')[0];
-
-        $I->amBearerAuthenticated($token);
-        $I->sendPUT('/profile/' . $user2->getId(), ['username' => 'updatedUsername', 'current_password' => $this->password, 'email' => 'updatedEmail@example.com']);
+        $I->haveInRepository(User::class, ['username' => $this->username, 'password' => $this->encodePasswordByBCryptSymfonyAlgorithm($this->password), 'enabled' => 1, 'email' => $this->email, 'confirmationToken' => $this->confirmationToken]);
+        $user2Id = $I->haveInRepository(User::class, ['username' => $this->username2, 'password' => $this->encodePasswordByBCryptSymfonyAlgorithm($this->password2), 'enabled' => 1, 'email' => $this->email2, 'confirmationToken' => $this->confirmationToken2]);
+        $I->imLogged($this->username, $this->password);
+        $I->sendPUT('/profile/' . $user2Id, ['username' => 'updatedUsername', 'current_password' => $this->password, 'email' => 'updatedEmail@example.com']);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
     }
 

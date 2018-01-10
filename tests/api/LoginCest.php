@@ -8,7 +8,7 @@ class LoginCest
     public function loginWithCorrectPasswordByUsername(ApiTester $I)
     {
         $password = 'test';
-        $symfonyBCryptPassword = password_hash($password, PASSWORD_BCRYPT, ['cost' => 13]);
+        $symfonyBCryptPassword = $this->encodePasswordByBCryptSymfonyAlgorithm($password);
 
         $I->haveInRepository(User::class, ['username' => 'test', 'password' => $symfonyBCryptPassword, 'enabled' => 1, 'email' => 'test@example.com']);
         $I->sendPOST('/login', ["username" => "test", "password" => $password]);
@@ -25,7 +25,7 @@ class LoginCest
     {
         $password = 'test';
         $username = 'test@example.com';
-        $symfonyBCryptPassword = password_hash($password, PASSWORD_BCRYPT, ['cost' => 13]);
+        $symfonyBCryptPassword = $this->encodePasswordByBCryptSymfonyAlgorithm($password);
 
         $I->haveInRepository(User::class, ['username' => 'test', 'password' => $symfonyBCryptPassword, 'enabled' => 1, 'email' => $username]);
         $I->sendPOST('/login', ['username' => $username, "password" => $password]);
@@ -41,7 +41,7 @@ class LoginCest
     public function loginWithWrongPassword(ApiTester $I)
     {
         $password = 'test';
-        $symfonyBCryptPassword = password_hash($password, PASSWORD_BCRYPT, ['cost' => 13]);
+        $symfonyBCryptPassword = $this->encodePasswordByBCryptSymfonyAlgorithm($password);
 
         $I->haveInRepository(User::class, ['username' => 'test', 'password' => $symfonyBCryptPassword, 'enabled' => 1, 'email' => 'test@example.com']);
         $I->sendPOST('/login', ["username" => "test", "password" => 'wrongpassword']);
@@ -59,7 +59,7 @@ class LoginCest
     {
         $password = 'test';
         $username = 'username';
-        $symfonyBCryptPassword = password_hash($password, PASSWORD_BCRYPT, ['cost' => 13]);
+        $symfonyBCryptPassword = $this->encodePasswordByBCryptSymfonyAlgorithm($password);
 
         $I->haveInRepository(User::class, ['username' => $username, 'password' => $symfonyBCryptPassword, 'enabled' => 1, 'email' => 'test@example.com']);
         $I->sendPOST('/login', ["username" => 'wrongUsername', "password" => $symfonyBCryptPassword]);
@@ -71,5 +71,10 @@ class LoginCest
                 'message' => 'Bad credentials',
             ]
         );
+    }
+
+    private function encodePasswordByBCryptSymfonyAlgorithm($password)
+    {
+        return password_hash($password, PASSWORD_BCRYPT, ['cost' => 4]);
     }
 }
