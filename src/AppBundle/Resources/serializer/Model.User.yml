@@ -1,0 +1,11 @@
+FOS\UserBundle\Model\User:
+    exclusion_policy: all
+    properties:
+        id:
+            exclude: false
+        emailCanonical:
+            exclude: false
+            serialized_name: email
+        username:
+          exclude: false
+          serialized_name: username

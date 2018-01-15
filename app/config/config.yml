@@ -91,7 +91,12 @@ nelmio_cors:
         '^/': ~
 
 # Nelmio API Doc
-nelmio_api_doc: ~
+nelmio_api_doc:
+    documentation:
+        info:
+            title: My App
+            description: This is an awesome app!
+            version: 1.0.0
 
 # FOS REST Bundle
 fos_rest:
@@ -116,7 +121,12 @@ fos_rest:
         enabled: true
 
 #JMS Serializer
-jms_serializer: ~
+jms_serializer:
+    metadata:
+        directories:
+            serializer:
+                namespace_prefix: FOS\UserBundle
+                path: "%kernel.root_dir%/../src/AppBundle/Resources/serializer"
 
 # Lexik JWT Bundle
 lexik_jwt_authentication:
